@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="grid">
+  <section class="panel">
+    <h2>Módulos</h2>
+    <ul class="module-list">
+      {% for name in modules.keys()|sort %}
+        <li><a href="{{ url_for('view_module', name=name) }}">{{ name }}</a></li>
+      {% else %}
+        <li class="muted">Nenhum módulo</li>
+      {% endfor %}
+    </ul>
+    <form action="{{ url_for('create_module') }}" method="post" class="form-inline">
+      <input name="name" placeholder="Nome do módulo (Hangul)" required>
+      <button type="submit" class="btn">Criar</button>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Instruções rápidas</h2>
+    <ul>
+      <li>Crie um módulo e clique nele para adicionar palavras em Hangul.</li>
+      <li>Recomenda-se pelo menos 24 palavras por módulo.</li>
+      <li>Você pode colocar palavras uma a uma ou importar um arquivo do bloco de notas.</li>
+    </ul>
+  </section>
+</div>
+{% endblock %}

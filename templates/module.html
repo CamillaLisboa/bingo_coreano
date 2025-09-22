@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="module-header">
+  <h2>Módulo: {{ name }}</h2>
+  <form action="{{ url_for('delete_module', name=name) }}" method="post" onsubmit="return confirm('Apagar módulo?');">
+    <button type="submit" class="btn danger">Apagar módulo</button>
+  </form>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <h3>Palavras ({{ words|length }})</h3>
+    <ol class="words-list">
+      {% for w in words %}
+        <li>
+          <form action="{{ url_for('delete_word', name=name) }}" method="post" style="display:inline">
+            <input type="hidden" name="idx" value="{{ loop.index0 }}">
+            <button class="small danger" title="Apagar">×</button>
+          </form>
+          <span class="hangul">{{ w }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+    <form action="{{ url_for('add_word', name=name) }}" method="post" class="form-inline">
+      <input name="word" placeholder="Adicionar palavra (Hangul)" required>
+      <button class="btn">Adicionar</button>
+    </form>
+
+    <form action="{{ url_for('import_txt', name=name) }}" method="post" enctype="multipart/form-data" class="form-inline">
+      <input type="file" name="txtfile" accept=".txt">
+      <button class="btn">Importar .txt</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h3>Gerar cartelas</h3>
+    <form action="{{ url_for('generate', name=name) }}" method="post">
+      <label>Quantidade de cartelas:</label>
+      <input name="num_cards" type="number" value="4" min="1" max="500">
+      <button class="btn primary">Gerar PDF (download)</button>
+    </form>
+    <p class="muted">Formato: 4 cartelas por página A4, 5×5, centro = 프리.</p>
+  </div>
+</div>
+
+{% endblock %}

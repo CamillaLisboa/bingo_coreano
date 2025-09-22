@@ -1,0 +1,12 @@
+python -m venv venv
+venv\\Scripts\\activate 
+pip install -r requirements.txt
+
+Criar um `.exe` de um app Flask é incomum porque a aplicação é servida via servidor. Porém você pode empacotar a aplicação e abrir um navegador automaticamente. Para isso use o PyInstaller e inclua os arquivos estáticos e templates com `--add-data`.
+
+
+
+Depois execute `dist\app.exe` — ele executará o servidor integrado. Ainda será necessário abrir o endereço `http://127.0.0.1:5000` no navegador; você pode ajustar o código para abrir automaticamente com `webbrowser.open()`.
+
+
+
