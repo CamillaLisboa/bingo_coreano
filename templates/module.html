@@ -35,11 +35,13 @@
   <div class="panel">
     <h3>Gerar cartelas</h3>
     <form action="{{ url_for('generate', name=name) }}" method="post">
+      <label>Tamanho da grade (e.g., 3, 5):</label>
+      <input name="grid_size" type="number" value="5" min="3" max="9" step="2">
       <label>Quantidade de cartelas:</label>
       <input name="num_cards" type="number" value="4" min="1" max="500">
       <button class="btn primary">Gerar PDF (download)</button>
     </form>
-    <p class="muted">Formato: 4 cartelas por página A4, 5×5, centro = 프리.</p>
+    <p class="muted">Formato: 4 cartelas por página A4, centro = 프리.</p>
   </div>
 </div>
 

@@ -50,9 +50,13 @@ def register_font():
     return 'Helvetica'
 
 # PDF generation (4 cards per A4), 5x5 grid
-def generate_bingo_pdf_bytes(words, num_cards, fontname):
-    if len(words) < 24:
-        raise ValueError('Mínimo 24 palavras por módulo para 5x5 com centro FREE')
+def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
+    grid_n = int(grid_size)
+    if grid_n % 2 == 0:
+        raise ValueError('A matriz precisa ter tamanho ímpar (e.g., 3x3, 5x5) para ter um centro')
+
+    if len(words) < (grid_n * grid_n) - 1:
+        raise ValueError(f'Módulo precisa de pelo menos {(grid_n * grid_n) - 1} palavras para uma cartela {grid_n}x{grid_n}')
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -63,7 +67,6 @@ def generate_bingo_pdf_bytes(words, num_cards, fontname):
     gap = 10
     card_w = (page_w - margin*2 - gap) / cols
     card_h = (page_h - margin*2 - gap) / rows
-    grid_n = 5
     logo_exists = os.path.exists(LOGO_FILE)
     logo_max_h = 40
 
@@ -105,10 +108,11 @@ def generate_bingo_pdf_bytes(words, num_cards, fontname):
         gy0 = y_bottom + 5
         cell_w = grid_area_w / grid_n
         cell_h = grid_area_h / grid_n
+        fsize = min(cell_w, cell_h) / 2
 
-        choice = random.sample(words, grid_n*grid_n)
-        center_idx = (grid_n*grid_n)//2
-        choice[center_idx] = '프리'
+        choice = random.sample(words, (grid_n * grid_n) - 1)
+        center_idx = ((grid_n * grid_n) // 2)
+        choice.insert(center_idx, '프리')
 
         c.setStrokeColor(COLOR_BLUE)
         c.setLineWidth(1)
@@ -118,12 +122,6 @@ def generate_bingo_pdf_bytes(words, num_cards, fontname):
                 cy = gy0 + (grid_n - 1 - r) * cell_h
                 c.rect(cx, cy, cell_w, cell_h, stroke=1, fill=0)
                 text = choice[r*grid_n + cc]
-                if len(text) <= 4:
-                    fsize = 16
-                elif len(text) <= 8:
-                    fsize = 12
-                else:
-                    fsize = 10
                 c.setFont(fontname, fsize)
                 c.setFillColor(COLOR_BLUE)
                 c.drawCentredString(cx + cell_w/2, cy + cell_h/2 - fsize/3, text)
@@ -220,14 +218,17 @@ def generate(name):
     words = mods[name]
     try:
         num = int(request.form.get('num_cards', '1'))
-    except:
-        num = 1
-    if len(words) < 24:
-        flash('Módulo precisa de pelo menos 24 palavras', 'error')
+        grid_size = int(request.form.get('grid_size', '5'))
+    except (ValueError, TypeError):
+        flash('Valores para quantidade de cartelas ou tamanho da grade inválidos.', 'error')
         return redirect(url_for('view_module', name=name))
+    
     fontname = register_font()
     try:
-        buf = generate_bingo_pdf_bytes(words, num, fontname)
+        buf = generate_bingo_pdf_bytes(words, num, grid_size, fontname)
+    except ValueError as e:
+        flash(f'Erro ao gerar PDF: {e}', 'error')
+        return redirect(url_for('view_module', name=name))
     except Exception as e:
         flash(f'Erro ao gerar PDF: {e}', 'error')
         return redirect(url_for('view_module', name=name))
@@ -237,4 +238,3 @@ def generate(name):
 if __name__ == '__main__':
     ensure_data_file()
     app.run(debug=True)
-
