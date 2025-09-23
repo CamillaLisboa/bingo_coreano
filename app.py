@@ -14,7 +14,7 @@ from PIL import Image
 # Config
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(APP_ROOT, 'modules.json')
-LOGO_FILE = os.path.join(APP_ROOT, 'logo.png')
+LOGO_FILE = os.path.join(APP_ROOT, 'static', 'images', 'logo_cecsp.jpg')
 FONT_FILE = os.path.join(APP_ROOT, 'NotoSansKR-Regular.ttf')
 
 COLOR_RED = '#C60C30'
@@ -68,7 +68,7 @@ def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
     card_w = (page_w - margin*2 - gap) / cols
     card_h = (page_h - margin*2 - gap) / rows
     logo_exists = os.path.exists(LOGO_FILE)
-    logo_max_h = 40
+    logo_max_h = 20
 
     for i in range(num_cards):
         pos = i % 4
@@ -87,9 +87,7 @@ def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
         c.setFillColor(COLOR_RED)
         c.rect(x0, y_bottom + card_h - header_h, card_w, header_h, stroke=0, fill=1)
         c.setFillColor(COLOR_BG)
-        c.setFont(fontname, 18)
-        c.drawCentredString(x0 + card_w/2, y_bottom + card_h - header_h/2 - 6, '빙고')
-
+        
         if logo_exists:
             try:
                 im = Image.open(LOGO_FILE)
@@ -97,7 +95,8 @@ def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
                 ratio = logo_max_h / h
                 new_w = w * ratio
                 new_h = logo_max_h
-                c.drawInlineImage(LOGO_FILE, x0 + card_w - new_w - 6, y_bottom + card_h - new_h - 4,
+                centered_x = x0 + (card_w - new_w) / 2
+                c.drawInlineImage(LOGO_FILE, centered_x, y_bottom + card_h - new_h - 10,
                                   width=new_w, height=new_h)
             except Exception as e:
                 print('Logo error:', e)
@@ -108,8 +107,7 @@ def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
         gy0 = y_bottom + 5
         cell_w = grid_area_w / grid_n
         cell_h = grid_area_h / grid_n
-        fsize = min(cell_w, cell_h) / 2
-
+        
         choice = random.sample(words, (grid_n * grid_n) - 1)
         center_idx = ((grid_n * grid_n) // 2)
         choice.insert(center_idx, '프리')
@@ -122,6 +120,15 @@ def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
                 cy = gy0 + (grid_n - 1 - r) * cell_h
                 c.rect(cx, cy, cell_w, cell_h, stroke=1, fill=0)
                 text = choice[r*grid_n + cc]
+                
+                # Nova lógica para ajustar o tamanho da fonte dinamicamente
+                fsize = min(cell_w, cell_h) / 2
+                text_width = c.stringWidth(text, fontname, fsize)
+                while text_width > cell_w:
+                    fsize -= 0.5
+                    c.setFont(fontname, fsize)
+                    text_width = c.stringWidth(text, fontname, fsize)
+
                 c.setFont(fontname, fsize)
                 c.setFillColor(COLOR_BLUE)
                 c.drawCentredString(cx + cell_w/2, cy + cell_h/2 - fsize/3, text)

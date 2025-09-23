@@ -13,6 +13,7 @@
     <ol class="words-list">
       {% for w in words %}
         <li>
+          <span class="index">{{ loop.index }}.</span>
           <form action="{{ url_for('delete_word', name=name) }}" method="post" style="display:inline">
             <input type="hidden" name="idx" value="{{ loop.index0 }}">
             <button class="small danger" title="Apagar">×</button>

@@ -19,7 +19,7 @@ body {
   padding: 12px 18px;
   display: flex;
   align-items: center;
-  justify-content: center; /* Alterado para centralizar o conteúdo */
+  justify-content: space-between; /* Alinha os itens para as extremidades */
   gap: 12px;
 }
 
@@ -32,8 +32,7 @@ body {
   font-weight: 700;
   font-size: 1.2rem;
   text-align: center;
-  flex: 1;
-  max-width: fit-content; /* Adicionado para garantir que o título não empurre o logo */
+  flex: 1; /* Permite que o título ocupe o espaço disponível e centralize o conteúdo */
 }
 
 .topbar .nav {
@@ -127,10 +126,30 @@ input[type="text"], input[type="number"], input[type="file"] {
   gap: 12px;
 }
 
+
 .words-list {
-  max-height: 420px;
-  overflow: auto;
-  padding-left: 18px;
+  list-style-type: none; /* Remove a numeração padrão do HTML */
+  padding-left: 0;
+}
+
+.words-list li {
+  padding-left: 30px; /* Aumenta o espaço para o número e o botão */
+  position: relative;
+  margin-bottom: 5px; /* Adiciona um pequeno espaço entre as palavras */
+  display: flex;
+  align-items: center; /* Alinha verticalmente os itens */
+  gap: 10px; /* Adiciona espaço entre o número e o botão */
+}
+
+.words-list .index {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%); /* Centraliza verticalmente o número */
+}
+
+.words-list .danger {
+  transform: translateY(-2px); /* Desce o botão para alinhar melhor */
 }
 
 .hangul {

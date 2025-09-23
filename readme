@@ -9,4 +9,4 @@ Criar um `.exe` de um app Flask é incomum porque a aplicação é servida via s
 Depois execute `dist\app.exe` — ele executará o servidor integrado. Ainda será necessário abrir o endereço `http://127.0.0.1:5000` no navegador; você pode ajustar o código para abrir automaticamente com `webbrowser.open()`.
 
 
-
+pyinstaller --onefile --windowed --add-data "templates;templates" --add-data "static;static" --add-data "modules.json;." --add-data "NotoSansKR-Regular.ttf;." --hidden-import "reportlab" app.py
