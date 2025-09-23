@@ -10,6 +10,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from PIL import Image
+import threading
+import webbrowser
 
 # Config
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -53,10 +55,10 @@ def register_font():
 def generate_bingo_pdf_bytes(words, num_cards, grid_size, fontname):
     grid_n = int(grid_size)
     if grid_n % 2 == 0:
-        raise ValueError('A matriz precisa ter tamanho ímpar (e.g., 3x3, 5x5) para ter um centro')
+        raise ValueError('중앙이 있으려면 격자 크기는 홀수여야 합니다 (예: 3x3, 5x5).')
 
     if len(words) < (grid_n * grid_n) - 1:
-        raise ValueError(f'Módulo precisa de pelo menos {(grid_n * grid_n) - 1} palavras para uma cartela {grid_n}x{grid_n}')
+        raise ValueError(f'{grid_n}x{grid_n} 카드에는 모듈에 최소 {(grid_n * grid_n) - 1} 단어가 필요합니다.')
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -150,7 +152,7 @@ def index():
 def view_module(name):
     modules = load_modules()
     if name not in modules:
-        flash('Módulo não encontrado', 'error')
+        flash('모듈을 찾을 수 없습니다', 'error')
         return redirect(url_for('index'))
     words = modules[name]
     return render_template('module.html', name=name, words=words)
@@ -159,15 +161,15 @@ def view_module(name):
 def create_module():
     name = request.form.get('name', '').strip()
     if not name:
-        flash('Nome vazio', 'error')
+        flash('이름이 비어 있습니다', 'error')
         return redirect(url_for('index'))
     mods = load_modules()
     if name in mods:
-        flash('Módulo já existe', 'error')
+        flash('모듈이 이미 존재합니다', 'error')
     else:
         mods[name] = []
         save_modules(mods)
-        flash('Módulo criado', 'success')
+        flash('모듈 생성 완료', 'success')
     return redirect(url_for('index'))
 
 @app.route('/module/<name>/add', methods=['POST'])
@@ -175,12 +177,12 @@ def add_word(name):
     word = request.form.get('word', '').strip()
     mods = load_modules()
     if name not in mods:
-        flash('Módulo não encontrado', 'error')
+        flash('모듈을 찾을 수 없습니다', 'error')
         return redirect(url_for('index'))
     if word:
         mods[name].append(word)
         save_modules(mods)
-        flash('Palavra adicionada', 'success')
+        flash('단어 추가 완료', 'success')
     return redirect(url_for('view_module', name=name))
 
 @app.route('/module/<name>/delete_word', methods=['POST'])
@@ -190,7 +192,7 @@ def delete_word(name):
     if name in mods and 0 <= idx < len(mods[name]):
         mods[name].pop(idx)
         save_modules(mods)
-        flash('Palavra removida', 'success')
+        flash('단어 삭제 완료', 'success')
     return redirect(url_for('view_module', name=name))
 
 @app.route('/module/<name>/import_txt', methods=['POST'])
@@ -198,13 +200,13 @@ def import_txt(name):
     f = request.files.get('txtfile')
     mods = load_modules()
     if not f or name not in mods:
-        flash('Arquivo ou módulo inválido', 'error')
+        flash('유효하지 않은 파일 또는 모듈', 'error')
         return redirect(url_for('view_module', name=name))
     text = f.read().decode('utf-8')
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     mods[name].extend(lines)
     save_modules(mods)
-    flash(f'{len(lines)} palavras importadas', 'success')
+    flash(f'{len(lines)} 단어 가져오기 완료', 'success')
     return redirect(url_for('view_module', name=name))
 
 @app.route('/module/<name>/delete', methods=['POST'])
@@ -213,35 +215,38 @@ def delete_module(name):
     if name in mods:
         del mods[name]
         save_modules(mods)
-        flash('Módulo apagado', 'success')
+        flash('모듈 삭제 완료', 'success')
     return redirect(url_for('index'))
 
 @app.route('/module/<name>/generate', methods=['POST'])
 def generate(name):
     mods = load_modules()
     if name not in mods:
-        flash('Módulo inválido', 'error')
+        flash('유효하지 않은 모듈', 'error')
         return redirect(url_for('index'))
     words = mods[name]
     try:
         num = int(request.form.get('num_cards', '1'))
         grid_size = int(request.form.get('grid_size', '5'))
     except (ValueError, TypeError):
-        flash('Valores para quantidade de cartelas ou tamanho da grade inválidos.', 'error')
+        flash('카드 수량 또는 격자 크기 값이 유효하지 않습니다.', 'error')
         return redirect(url_for('view_module', name=name))
     
     fontname = register_font()
     try:
         buf = generate_bingo_pdf_bytes(words, num, grid_size, fontname)
     except ValueError as e:
-        flash(f'Erro ao gerar PDF: {e}', 'error')
+        flash(f'PDF 생성 오류: {e}', 'error')
         return redirect(url_for('view_module', name=name))
     except Exception as e:
-        flash(f'Erro ao gerar PDF: {e}', 'error')
+        flash(f'PDF 생성 오류: {e}', 'error')
         return redirect(url_for('view_module', name=name))
     filename = secure_filename(f'bingo_{name}.pdf')
     return send_file(buf, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 if __name__ == '__main__':
     ensure_data_file()
-    app.run(debug=True)
+    # Usa um temporizador para dar 1 segundo ao servidor para iniciar
+    threading.Timer(1, lambda: webbrowser.open('http://127.0.0.1:5000')).start()
+    # Desativa o modo debug para evitar que o navegador abra duas vezes
+    app.run(debug=False)

@@ -2,25 +2,29 @@
 {% block content %}
 <div class="grid">
   <section class="panel">
-    <h2>Módulos</h2>
+    <h2>모듈</h2>
     <ul class="module-list">
       {% for name in modules.keys()|sort %}
         <li><a href="{{ url_for('view_module', name=name) }}">{{ name }}</a></li>
       {% else %}
-        <li class="muted">Nenhum módulo</li>
+        <li class="muted">모듈 없음</li>
       {% endfor %}
     </ul>
     <form action="{{ url_for('create_module') }}" method="post" class="form-inline">
-      <input name="name" placeholder="Nome do módulo (Hangul)" required>
-      <button type="submit" class="btn">Criar</button>
+      <input name="name" placeholder="모듈 이름 (한글)" required>
+      <button type="submit" class="btn">생성하다</button>
     </form>
   </section>
   <section class="panel">
-    <h2>Instruções rápidas</h2>
+    <h2>빠른 지침</h2>
     <ul>
-      <li>Crie um módulo e clique nele para adicionar palavras em Hangul.</li>
-      <li>Recomenda-se pelo menos 25 palavras por módulo.</li>
-      <li>Você pode colocar palavras uma a uma ou importar um arquivo do bloco de notas.</li>
+      <li>모듈을 만들고 클릭하여 한글 단어를 추가하세요.</li>
+      <li>권장 사항:</li>
+      <li>-> 3x3 칸 - 최소 8 단어;</li>
+      <li>-> 5x5 칸 - 최소 24 단어;</li>
+      <li>-> 7x7 칸 - 최소 48 단어;</li>
+      <li>-> 9x9 칸 - 최소 80 단어.</li>
+      <li>단어를 하나씩 입력하거나 메모장 파일을 가져올 수 있습니다.</li>
     </ul>
   </section>
 </div>
